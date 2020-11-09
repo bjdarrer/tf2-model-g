@@ -139,6 +139,7 @@ class FluidModelG(PDESolverDx):
                 G -= (u*G_dx + v*G_dy + G*divergence) * self.dt
                 X -= (u*X_dx + v*X_dy + X*divergence) * self.dt
                 Y -= (u*Y_dx + v*Y_dy + Y*divergence) * self.dt
+                
                 return G, X, Y
         elif self.dims == 3:
             self.u = tf.constant(u[0], 'float64')
