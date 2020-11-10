@@ -28,3 +28,7 @@ pip3 install tensorflow
 ```bash
 pip3 install -r requirements.txt
 ```
+run code example:
+```bash
+python3 render_video.py ~/tf2-model-g/nucleation_and_motion_in_fluid_2D.mp4 --params params/nucleation_and_motion_in_fluid_2D.yaml
+```
