@@ -32,3 +32,7 @@ run code example:
 ```bash
 python3 render_video.py ~/tf2-model-g/nucleation_and_motion_in_fluid_2D.mp4 --params params/nucleation_and_motion_in_fluid_2D.yaml
 ```
+run with plotting facility
+```bash
+pip3 install matplotlib
+```
