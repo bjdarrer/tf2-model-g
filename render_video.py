@@ -6,6 +6,7 @@ import tensorflow as tf
 import progressbar
 import imageio
 import yaml
+import matplotlib.pyplot as pp  # BJD added 18.11.2020
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -85,6 +86,21 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             zero_line = 1 - tf.exp(-600 * fluid_model_g.Y**2)
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
+#===========================================================================
+        #if n == 4:
+        #    X_array = [
+        #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),
+        #    ] # BJD put this in 18.11.2020
+        #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
+
+            print("H E L L O")
+            y1 = np.loadtxt("test.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            row1 = y1[120]
+            
+            print(row1)
+            pp.plot(row1)
+            pp.show()
+#===========================================================================
     #     max_G = max(max_G, tf.reduce_max(fluid_model_g.G).numpy())
     #     min_G = min(min_G, tf.reduce_min(fluid_model_g.G).numpy())
     #     max_X = max(max_X, tf.reduce_max(fluid_model_g.X).numpy())
@@ -93,7 +109,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
     #     min_Y = min(min_Y, tf.reduce_min(fluid_model_g.Y).numpy())
 
     # print(min_G, max_G, min_X, max_X, min_Y, max_Y)
-
+    #print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
 
 def charged_nucleation_in_2D(writer, args, R=30, D=25, weights=(0, -10, -8, 8)):
     dx = 2*R / args.height
