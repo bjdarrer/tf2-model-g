@@ -276,7 +276,7 @@ class FluidModelG(PDESolverDx):
             self.G, self.X, self.Y = self.diffusion_advection_integrator(self.G, self.X, self.Y, u, v, divergence)
             print("Value of X: ", self.X) # ***** BJD inserted this line 13.11.2020 *****
 
-# ======================= BJD 18.11.2020 ================================================      
+# =======================BJD 18.11.2020================================================      
         #data = [['nameservers','panel'], ['nameservers','panel']] 
     
             #with open("output_bjd_Xons_1.txt", "w") as txt_file: # BJD 18.11.2020
@@ -289,7 +289,7 @@ class FluidModelG(PDESolverDx):
             #a_file.close()
 
             # this below line worked!! BJD
-            np.savetxt("test.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
+            np.savetxt("test2.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
             
             #for i in xrange(10):
             #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
