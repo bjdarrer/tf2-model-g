@@ -31,7 +31,7 @@ RESOLUTIONS = {
     "40p": (71, 40),
 }
 
-#c1 = 0
+c1 = 0
 
 def make_video_frame(rgb, indexing='ij'):
     if indexing == 'ij':
@@ -89,13 +89,13 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             zero_line = 1 - tf.exp(-600 * fluid_model_g.Y**2)
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
-#========================BJD added 18.11.2020===================================================
+#===========================================================================
         #if n == 4:
         #    X_array = [
         #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),
         #    ] # BJD put this in 18.11.2020
         #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
-            
+            """
             print("H E L L O")
             y1 = np.loadtxt("test.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
             row1 = y1[120]
@@ -103,7 +103,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             print(row1)
             pp.plot(row1)
             pp.show()
-            
+            """
 #===========================================================================
     #for i in xrange(10):
         #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
@@ -115,7 +115,6 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
     #data = read_data(filename)
 
     #for c1 in xrange(10):
-    """
     for c1 in 10:
         print("H E L L O")
         y1 = np.loadtxt("file_" + str(c1) + ".txt", 'r') #, delimiter=" :-) ", usecols=(120))  # (426, 240)
@@ -124,7 +123,6 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
         print(row1)
         pp.plot(row1)
         pp.show()
-    """
     #     max_G = max(max_G, tf.reduce_max(fluid_model_g.G).numpy())
     #     min_G = min(min_G, tf.reduce_min(fluid_model_g.G).numpy())
     #     max_X = max(max_X, tf.reduce_max(fluid_model_g.X).numpy())

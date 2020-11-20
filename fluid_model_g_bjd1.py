@@ -289,7 +289,7 @@ class FluidModelG(PDESolverDx):
             #a_file.close()
 
             # this below line worked!! BJD
-            np.savetxt("test.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
+            #np.savetxt("test.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
             
             #for i in xrange(10):
             #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
@@ -313,11 +313,11 @@ class FluidModelG(PDESolverDx):
         self.Y += self.dt * source_Y
         self.t += self.dt
     
-        #np.savetxt("file_" + str(c1) + ".txt", self.X)
+        np.savetxt("file_" + str(c1) + ".txt", self.X)
         #with io.open("file_" + str(c1) + ".txt", 'w', encoding='utf-8') as f:
             #f.write(str(func(c1))
-        #if c1 == 10:
-        #    c1 = 0
+        if c1 == 10:
+            c1 = 0
         
 
     def numpy(self):
