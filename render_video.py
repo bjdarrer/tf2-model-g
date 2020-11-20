@@ -89,7 +89,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             zero_line = 1 - tf.exp(-600 * fluid_model_g.Y**2)
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
-#========================BJD added 18.11.2020===================================================
+#======================== BJD added 18.11.2020 ===================================================
         #if n == 4:
         #    X_array = [
         #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),

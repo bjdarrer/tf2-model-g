@@ -276,7 +276,7 @@ class FluidModelG(PDESolverDx):
             self.G, self.X, self.Y = self.diffusion_advection_integrator(self.G, self.X, self.Y, u, v, divergence)
             print("Value of X: ", self.X) # ***** BJD inserted this line 13.11.2020 *****
 
-# =======================# BJD 18.11.2020================================================      
+# ======================= BJD 18.11.2020 ================================================      
         #data = [['nameservers','panel'], ['nameservers','panel']] 
     
             #with open("output_bjd_Xons_1.txt", "w") as txt_file: # BJD 18.11.2020

@@ -104,7 +104,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             pp.plot(row1)
             pp.show()
             """
-#===========================================================================
+#==============================BJD 18.11.2020=============================================
     #for i in xrange(10):
         #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
         #with io.open("file_" + str(c1) + ".txt", 'w', encoding='utf-8') as f:
