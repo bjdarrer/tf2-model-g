@@ -7,6 +7,7 @@ import progressbar
 import imageio
 import yaml
 import matplotlib.pyplot as pp  # BJD added 18.11.2020
+#import matplotlib.pyplot as plt
 
 import io # BJD added 18.11.2020
 try:
@@ -17,6 +18,7 @@ except ImportError:
 from model_g import ModelG
 from fluid_model_g import FluidModelG
 from util import bl_noise
+from numpy import *
 from matplotlib import pyplot as plt # BJD added 20.11.2020
 
 RESOLUTIONS = {
@@ -43,7 +45,7 @@ def make_video_frame(rgb, indexing='ij'):
 
 
 def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
-    c1 = 0
+    c1 = 0 # BJD added this on 20.11.2020
     dx = 2*R / args.height
     x = (np.arange(args.width) - args.width // 2) * dx
     y = (np.arange(args.height) - args.height // 2) * dx
@@ -99,23 +101,42 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
         #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
             c1 = c1 + 1
             print("H E L L O")
-            y1 = np.loadtxt("test2.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y1 = np.loadtxt("test2X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y2 = np.loadtxt("test2Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y3 = np.loadtxt("test2G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
             row1 = y1[120]  # choose row 120 of 2D array = (426,240)
+            row2 = y2[120]  # choose row 120 of 2D array = (426,240)
+            row3 = y3[120]  # choose row 120 of 2D array = (426,240)
             
+            #t = linspace(0, 2*math.pi, 400)
+            #a = sin(t)
+            #b = cos(t)
+            #c = a + b
+
             print(row1)
             fig, pp = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
             #fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
             #ax.plot([0,1,2], [10,20,3])
 
-            pp.plot(row1)
+            #pp.plot(t, a, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
+            #pp.plot(t, b, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
+            #pp.plot(t, c, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
+
+            pp.plot(row1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
+            pp.plot(row2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
+            pp.plot(row3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
+
+            #pp.plot(row1) # BJD previous working plot code 21.11.2020
             #pp.show()
             #plt.savefig('test2.png')
             #plt.savefig('test2.pdf')
-            plt.title('X potential w.r.t. to 1D space after time interval = ' + str(c1))
+            plt.title('X, Y, G potential vs 1D space - time = ' + str(c1))
             plt.xlabel("1D spacial units")
-            plt.ylabel("X potential - concentration per unit volume")
+            plt.ylabel("X, Y, G pot. - concentration per unit vol")
             #fig.savefig('test2.png')   # save the figure to file
-            fig.savefig('test2_' + str(c1) + '.png')
+            plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
+
+            fig.savefig('test2_XYG_' + str(c1) + '.png')
             plt.close(fig)    # close the figure window
             #plt.savefig('test2_' + str(c1) + '.png')
 #===========================================================================
