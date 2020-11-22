@@ -36,3 +36,7 @@ run with plotting facility
 ```bash
 pip3 install matplotlib
 ```
+
+Programming text/debug editor:
+
+- [Visual Studio Code](https://code.visualstudio.com/)
