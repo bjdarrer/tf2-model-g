@@ -7,7 +7,11 @@ import progressbar
 import imageio
 import yaml
 import matplotlib.pyplot as pp  # BJD added 18.11.2020
+#import cv2 # BJD added 24.11.2020 - for make video
+#import glob # BJD added 24.11.2020 - for make video
 #import matplotlib.pyplot as plt
+#import ffmpeg
+import os # BJD added 24.11.2020 - for make video
 
 import io # BJD added 18.11.2020
 try:
@@ -18,7 +22,7 @@ except ImportError:
 from model_g import ModelG
 from fluid_model_g import FluidModelG
 from util import bl_noise
-from numpy import *
+from numpy import * # BJD added 20.11.2020
 from matplotlib import pyplot as plt # BJD added 20.11.2020
 
 RESOLUTIONS = {
@@ -94,6 +98,9 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
 #========================BJD added 18.11.2020===================================================
+            if n == 100:
+                print("n = ", n)
+                break
         #if n == 4:
         #    X_array = [
         #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),
@@ -101,12 +108,12 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
         #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
             c1 = c1 + 1
             print("H E L L O")
-            y1 = np.loadtxt("test2X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            y2 = np.loadtxt("test2Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            y3 = np.loadtxt("test2G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            row1 = y1[120]  # choose row 120 of 2D array = (426,240)
-            row2 = y2[120]  # choose row 120 of 2D array = (426,240)
-            row3 = y3[120]  # choose row 120 of 2D array = (426,240)
+            y1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            row1 = y1[214]  # choose row 120 of 2D array = (426,240)
+            row2 = y2[214]  # choose row 120 of 2D array = (426,240)
+            row3 = y3[214]  # choose row 120 of 2D array = (426,240)
             
             #t = linspace(0, 2*math.pi, 400)
             #a = sin(t)
@@ -121,7 +128,8 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             #pp.plot(t, a, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
             #pp.plot(t, b, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
             #pp.plot(t, c, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
-
+            # https://stackoverflow.com/questions/22276066/how-to-plot-multiple-functions-on-the-same-figure-in-matplotlib
+            
             pp.plot(row1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
             pp.plot(row2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
             pp.plot(row3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
@@ -136,7 +144,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             #fig.savefig('test2.png')   # save the figure to file
             plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
 
-            fig.savefig('test2_XYG_' + str(c1) + '.png')
+            fig.savefig('/home/brendan/software/tf2-model-g/plots/test2_video2/test2_video_XYG_' + str(c1) + '.png')
             plt.close(fig)    # close the figure window
             #plt.savefig('test2_' + str(c1) + '.png')
 #===========================================================================
@@ -366,3 +374,28 @@ if __name__ == '__main__':
 
     episodes[args.episode](writer, args)
     writer.close()
+
+#=======================BJD make video from .png files 24.11.2020===========================
+def save1():
+    #os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4")
+    os.system("ffmpeg -r 1 -i /home/brendan/software/tf2-model-g/plots/test2_video2/test2_video_XYG_%01d.png -vcodec mpeg4 -y test2_video_2.mp4")
+
+save1()
+"""
+    img_array = []
+    #for filename in glob.glob('C:/New folder/Images/*.jpg'):
+    for filename in glob.glob('/home/brendan/software/tf2-model-g/plots/test2_video1/*.png'):
+        #fig.savefig('/home/brendan/software/tf2-model-g/plots/test2_video1/test2_video_XYG_' + str(c1) + '.png')
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        size = (width,height)
+        img_array.append(img)
+
+
+    out = cv2.VideoWriter('test2_video1_project.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+ 
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+    out.release()
+"""
+#============================================================================================
