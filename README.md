@@ -37,6 +37,15 @@ run with plotting facility
 pip3 install matplotlib
 ```
 
+Install ffmpeg:
+```bash
+sudo add-apt-repository ppa:mc3man/trusty-media
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
+See ---> [How to install ffmpeg for ubuntu using command line?](https://stackoverflow.com/questions/42589892/how-to-install-ffmpeg-for-ubuntu-using-command-line)
+
+
 Programming text/debug editor:
 
 - [Visual Studio Code](https://code.visualstudio.com/)
