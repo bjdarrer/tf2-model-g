@@ -111,9 +111,9 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
             y1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
             y2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
             y3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array2/test2G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            row1 = y1[214]  # choose row 120 of 2D array = (426,240)
-            row2 = y2[214]  # choose row 120 of 2D array = (426,240)
-            row3 = y3[214]  # choose row 120 of 2D array = (426,240)
+            row1 = y1[214]  # choose row 214 of 2D array = (426,240)
+            row2 = y2[214]  # choose row 214 of 2D array = (426,240)
+            row3 = y3[214]  # choose row 214 of 2D array = (426,240)
             
             #t = linspace(0, 2*math.pi, 400)
             #a = sin(t)
