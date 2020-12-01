@@ -4,12 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": "Render Video: 2d",
+            "name": "Render Video: 3d",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/render_video.py",
-            "args" : ["${workspaceFolder}/nucleation_and_motion_in_fluid_2D___2_seeds_16.mp4", "--params", "params/nucleation_and_motion_in_fluid_2D.yaml"],
+            "args" : ["${workspaceFolder}/G_X_Y_bjd_3d_1a.mp4", "--params", "params/nucleation_3D.yaml"],
             "console": "integratedTerminal"
         }
     ]

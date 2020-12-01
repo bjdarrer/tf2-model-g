@@ -2,13 +2,10 @@ import warnings
 import tensorflow as tf
 import numpy as np
 import util
-import io # BJD added 18.11.2020
 from pde_solver import PDESolverDx
 from integrators.model_g import polynomial_order_4_centered as reaction_integrator
 from integrators.model_g import steady_state
-#from render_video import c1
 
-#c1 = 0
 
 DEFAULT_PARAMS = {
     "A": 3.42,
@@ -142,7 +139,6 @@ class FluidModelG(PDESolverDx):
                 G -= (u*G_dx + v*G_dy + G*divergence) * self.dt
                 X -= (u*X_dx + v*X_dy + X*divergence) * self.dt
                 Y -= (u*Y_dx + v*Y_dy + Y*divergence) * self.dt
-                
                 return G, X, Y
         elif self.dims == 3:
             self.u = tf.constant(u[0], 'float64')
@@ -270,37 +266,9 @@ class FluidModelG(PDESolverDx):
         )
         rho = tf.math.log(self.params['base-density'] + density_of_reactants)
         if self.dims == 2:
-            #c1 = c1 + 1 # BJD added 18.11.2020
             u, v = self.u, self.v  # Store unintegrated flow so that we're on the same timestep
             self.u, self.v, divergence = self.flow_integrator(rho, self.u, self.v)
             self.G, self.X, self.Y = self.diffusion_advection_integrator(self.G, self.X, self.Y, u, v, divergence)
-            print("Value of X: ", self.X) # ***** BJD inserted this line 13.11.2020 *****
-
-# =======================BJD 18.11.2020================================================      
-        #data = [['nameservers','panel'], ['nameservers','panel']] 
-    
-            #with open("output_bjd_Xons_1.txt", "w") as txt_file: # BJD 18.11.2020
-            #    for line in self.X:
-            #        txt_file.write(" ".join(line) + "\n") # works with any number of elements in a line
-            #c1 = c1 + 1
-            #a_file = open("output_bjd_Xons_1.txt", "w")
-            #    for row in self.X:
-            #        np.savetxt(a_file, row)
-            #a_file.close()
-
-            # this below line worked!! BJD
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/X.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/Y.txt", self.Y)
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/G.txt", self.G)
-
-            #for i in xrange(10):
-            #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
-            #np.savetxt("file_" + str(c1) + ".txt", self.X)
-            #with io.open("file_" + str(c1) + ".txt", 'w', encoding='utf-8') as f:
-                #f.write(str(func(c1))
-            #if c1 == 10:
-            #    c1 = 0
-# ========================================================================================     
         elif self.dims == 3:
             u, v, w = self.u, self.v, self.w  # Store unintegrated flow so that we're on the same timestep
             self.u, self.v, self.w, divergence = self.flow_integrator(rho, self.u, self.v, self.w)
@@ -314,13 +282,6 @@ class FluidModelG(PDESolverDx):
         self.X += self.dt * source_X
         self.Y += self.dt * source_Y
         self.t += self.dt
-    
-        #np.savetxt("file_" + str(c1) + ".txt", self.X)
-        #with io.open("file_" + str(c1) + ".txt", 'w', encoding='utf-8') as f:
-            #f.write(str(func(c1))
-        #if c1 == 10:
-        #    c1 = 0
-        
 
     def numpy(self):
         if self.dims == 2:

@@ -6,14 +6,6 @@ import tensorflow as tf
 import progressbar
 import imageio
 import yaml
-import matplotlib.pyplot as pp  # BJD added 18.11.2020
-#import cv2 # BJD added 24.11.2020 - for make video
-#import glob # BJD added 24.11.2020 - for make video
-#import matplotlib.pyplot as plt
-#import ffmpeg
-import os # BJD added 24.11.2020 - for make video
-
-import io # BJD added 18.11.2020
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -22,8 +14,7 @@ except ImportError:
 from model_g import ModelG
 from fluid_model_g import FluidModelG
 from util import bl_noise
-from numpy import * # BJD added 20.11.2020
-from matplotlib import pyplot as plt # BJD added 20.11.2020
+
 
 RESOLUTIONS = {
     "2160p": (3840, 2160),
@@ -38,7 +29,6 @@ RESOLUTIONS = {
     "40p": (71, 40),
 }
 
-#c1 = 0
 
 def make_video_frame(rgb, indexing='ij'):
     if indexing == 'ij':
@@ -50,7 +40,6 @@ def make_video_frame(rgb, indexing='ij'):
 
 #def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
 def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
-    c1 = 0 # BJD added this on 20.11.2020
     dx = 2*R / args.height
     x = (np.arange(args.width) - args.width // 2) * dx
     y = (np.arange(args.height) - args.height // 2) * dx
@@ -58,10 +47,18 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
 
     def source_G(t):
         center = np.exp(-0.5*(t-5)**2) * 10
+        gradient = (1+np.tanh(t-30)) * 0.003 # BJD added 0.0003 ---> 0.003
+        return -(
+            np.exp(-0.5*((x-25)**2 + y*y)) + np.exp(-0.5*((x+25)**2 + y*y))
+        ) * center + (x+8) * gradient
+    """
+    def source_G(t):
+        center = np.exp(-0.5*(t-5)**2) * 10
         gradient = (1+np.tanh(t-30)) * 0.0003
         return -(
             np.exp(-0.5*((x-25)**2 + y*y)) + np.exp(-0.5*((x+25)**2 + y*y))
         ) * center + (x+8) * gradient
+    """
     """
     def source_G(t):
         amount = np.exp(-0.5*(t-5)**2)
@@ -69,7 +66,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             np.exp(-0.5*((x-D)**2+y*y)) * weights[0] +
             np.exp(-0.5*((x+D)**2+y*y)) * weights[1]
         ) * amount
-    """
+    """    
     source_functions = {
         'G': source_G,
     }
@@ -95,7 +92,6 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
     max_X = 1.2854028081816122
     min_Y = -0.7454193158963579
     max_Y = 4.20524950766914
-    #c1 = 0
     for n in progressbar.progressbar(range(args.num_frames)):
         fluid_model_g.step()
         if n % args.oversampling == 0:
@@ -107,82 +103,6 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             zero_line = 1 - tf.exp(-600 * fluid_model_g.Y**2)
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
-#========================BJD added 18.11.2020===================================================
-            if n == 150:
-                print("n = ", n)
-                break
-        #if n == 4:
-        #    X_array = [
-        #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),
-        #    ] # BJD put this in 18.11.2020
-        #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
-            c1 = c1 + 1
-            print("H E L L O")
-            x1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            x2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            x3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            
-            #ndArray[ : , column_index]   # @ https://thispointer.com/python-numpy-select-rows-columns-by-index-from-a-2d-ndarray-multi-dimension/
-            column1 = x1[: , 120]  # choose row 214 of 2D array = (426,240)
-            column2 = x2[: , 120]  # choose row 214 of 2D array = (426,240)
-            column3 = x3[: , 120]  # choose row 214 of 2D array = (426,240)
-            
-            #t = linspace(0, 2*math.pi, 400)
-            #a = sin(t)
-            #b = cos(t)
-            #c = a + b
-
-            print(column1)
-            fig, pp = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
-
-            #axes = pp.add_axes([0.1,0.1,0.8,0.8])
-
-            #-------------------
-            #a= plt.figure()
-            #axes= a.add_axes([0.1,0.1,0.8,0.8])
-            # adding axes
-            #x= np.arange(0,11)
-            #axes.plot(x,x**3, marker='*')
-            #axes.set_xlim([0,250])
-            #axes.set_ylim([-3,2])
-            #plt.show()
-            #------------------
-            #fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
-            #ax.plot([0,1,2], [10,20,3])
-
-            #pp.plot(t, a, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
-            #pp.plot(t, b, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
-            #pp.plot(t, c, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
-            # https://stackoverflow.com/questions/22276066/how-to-plot-multiple-functions-on-the-same-figure-in-matplotlib
-            
-            #row1 = range(-3, 2)
-            #row2 = range(-3, 2)
-            #row3 = range(-3, 2)
-            #y = range(-3, 2)
-
-            pp.plot(column1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
-            pp.plot(column2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
-            pp.plot(column3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
-
-            #axes.set_xlim([0,250])
-            #axes.set_ylim([-3,2])
-            #pp.set_xlim([0,250])
-            pp.set_ylim([-4,4])    # ******* BJD this one works! 1.12.2020  ***********
-            #pp.plot(row1) # BJD previous working plot code 21.11.2020
-            #pp.show()
-            #plt.savefig('test2.png')
-            #plt.savefig('test2.pdf')
-            plt.title('X, Y, G potential vs 1D space - time = ' + str(c1))
-            plt.xlabel("1D spacial units")
-            plt.ylabel("X, Y, G pot. - concentration per unit vol")
-            #fig.savefig('test2.png')   # save the figure to file
-            plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
-
-            fig.savefig('/home/brendan/software/tf2-model-g/plots/1D_video16/1D_video_XYG_' + str(c1) + '.png')
-            plt.close(fig)    # close the figure window
-            #plt.savefig('test2_' + str(c1) + '.png')
-#===========================================================================
-
     #     max_G = max(max_G, tf.reduce_max(fluid_model_g.G).numpy())
     #     min_G = min(min_G, tf.reduce_min(fluid_model_g.G).numpy())
     #     max_X = max(max_X, tf.reduce_max(fluid_model_g.X).numpy())
@@ -191,6 +111,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
     #     min_Y = min(min_Y, tf.reduce_min(fluid_model_g.Y).numpy())
 
     # print(min_G, max_G, min_X, max_X, min_Y, max_Y)
+
 
 def charged_nucleation_in_2D(writer, args, R=30, D=25, weights=(0, -10, -8, 8)):
     dx = 2*R / args.height
@@ -251,7 +172,6 @@ def charged_nucleation_in_2D(writer, args, R=30, D=25, weights=(0, -10, -8, 8)):
 
 # TODO: Requires some work. Unstable like this.
 def nucleation_3D(writer, args, R=20):
-    """
     raise NotImplementedError("Needs some work")
     params = {
         "A": 3.4,
@@ -269,7 +189,6 @@ def nucleation_3D(writer, args, R=20):
         "viscosity": 0.3,
         "speed-of-sound": 1.0,
     }
-    """
 
     dx = 2*R / args.height
     x = (np.arange(args.width) - args.width // 2) * dx
@@ -339,7 +258,6 @@ if __name__ == '__main__':
     episodes = {
         'nucleation_and_motion_in_fluid_2D': nucleation_and_motion_in_G_gradient_fluid_2D,
         'charged_nucleation_in_2D': charged_nucleation_in_2D,
-        'nucleation_3D': nucleation_3D,
     }
 
     parser = argparse.ArgumentParser(description='Render audio samples')
@@ -391,12 +309,3 @@ if __name__ == '__main__':
 
     episodes[args.episode](writer, args)
     writer.close()
-
-#=======================BJD make video from .png files 24.11.2020===========================
-def save1():
-    #os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4")
-    os.system("ffmpeg -r 1 -i /home/brendan/software/tf2-model-g/plots/1D_video16/1D_video_XYG_%01d.png -vcodec mpeg4 -y 1D_2_seeds_video_16.mp4")
-
-save1()
-
-#============================================================================================

@@ -289,9 +289,9 @@ class FluidModelG(PDESolverDx):
             #a_file.close()
 
             # this below line worked!! BJD
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/X.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/Y.txt", self.Y)
-            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array9/G.txt", self.G)
+            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array5/X.txt", self.X) # https://www.python-course.eu/numpy_reading_writing.php
+            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array5/Y.txt", self.Y)
+            np.savetxt("/home/brendan/software/tf2-model-g/arrays/array5/G.txt", self.G)
 
             #for i in xrange(10):
             #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:

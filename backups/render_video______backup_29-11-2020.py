@@ -49,7 +49,7 @@ def make_video_frame(rgb, indexing='ij'):
 
 
 #def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
-def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
+def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
     c1 = 0 # BJD added this on 20.11.2020
     dx = 2*R / args.height
     x = (np.arange(args.width) - args.width // 2) * dx
@@ -59,9 +59,11 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
     def source_G(t):
         center = np.exp(-0.5*(t-5)**2) * 10
         gradient = (1+np.tanh(t-30)) * 0.0003
-        return -(
-            np.exp(-0.5*((x-25)**2 + y*y)) + np.exp(-0.5*((x+25)**2 + y*y))
-        ) * center + (x+8) * gradient
+        return -np.exp(-0.5*(x*x+y*y))* center + (x+8) * gradient # BJD original 29.11.2020
+        #return -(
+        #    np.exp( -0.5*( (x - 50)**2 + y*y ) ) +
+        #    np.exp( -0.5*( (x + 50)**2 + y*y ) ) 
+        #) * center + (x+8) * gradient # BJD altered for 2 seeds 29.11.2020
     """
     def source_G(t):
         amount = np.exp(-0.5*(t-5)**2)
@@ -108,7 +110,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
 #========================BJD added 18.11.2020===================================================
-            if n == 150:
+            if n == 100:
                 print("n = ", n)
                 break
         #if n == 4:
@@ -118,35 +120,20 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
         #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
             c1 = c1 + 1
             print("H E L L O")
-            x1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            x2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            x3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array9/G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
-            
-            #ndArray[ : , column_index]   # @ https://thispointer.com/python-numpy-select-rows-columns-by-index-from-a-2d-ndarray-multi-dimension/
-            column1 = x1[: , 120]  # choose row 214 of 2D array = (426,240)
-            column2 = x2[: , 120]  # choose row 214 of 2D array = (426,240)
-            column3 = x3[: , 120]  # choose row 214 of 2D array = (426,240)
+            y1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array5/X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array5/Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array5/G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            row1 = y1[214]  # choose row 214 of 2D array = (426,240)
+            row2 = y2[214]  # choose row 214 of 2D array = (426,240)
+            row3 = y3[214]  # choose row 214 of 2D array = (426,240)
             
             #t = linspace(0, 2*math.pi, 400)
             #a = sin(t)
             #b = cos(t)
             #c = a + b
 
-            print(column1)
+            print(row1)
             fig, pp = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
-
-            #axes = pp.add_axes([0.1,0.1,0.8,0.8])
-
-            #-------------------
-            #a= plt.figure()
-            #axes= a.add_axes([0.1,0.1,0.8,0.8])
-            # adding axes
-            #x= np.arange(0,11)
-            #axes.plot(x,x**3, marker='*')
-            #axes.set_xlim([0,250])
-            #axes.set_ylim([-3,2])
-            #plt.show()
-            #------------------
             #fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
             #ax.plot([0,1,2], [10,20,3])
 
@@ -155,19 +142,10 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             #pp.plot(t, c, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
             # https://stackoverflow.com/questions/22276066/how-to-plot-multiple-functions-on-the-same-figure-in-matplotlib
             
-            #row1 = range(-3, 2)
-            #row2 = range(-3, 2)
-            #row3 = range(-3, 2)
-            #y = range(-3, 2)
+            pp.plot(row1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
+            pp.plot(row2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
+            pp.plot(row3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
 
-            pp.plot(column1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
-            pp.plot(column2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
-            pp.plot(column3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
-
-            #axes.set_xlim([0,250])
-            #axes.set_ylim([-3,2])
-            #pp.set_xlim([0,250])
-            pp.set_ylim([-4,4])    # ******* BJD this one works! 1.12.2020  ***********
             #pp.plot(row1) # BJD previous working plot code 21.11.2020
             #pp.show()
             #plt.savefig('test2.png')
@@ -178,11 +156,30 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             #fig.savefig('test2.png')   # save the figure to file
             plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
 
-            fig.savefig('/home/brendan/software/tf2-model-g/plots/1D_video16/1D_video_XYG_' + str(c1) + '.png')
+            fig.savefig('/home/brendan/software/tf2-model-g/plots/1D_video7/1D_video_XYG_' + str(c1) + '.png')
             plt.close(fig)    # close the figure window
             #plt.savefig('test2_' + str(c1) + '.png')
 #===========================================================================
+    #for i in xrange(10):
+        #with io.open("file_" + str(i) + ".dat", 'w', encoding='utf-8') as f:
+        #with io.open("file_" + str(c1) + ".txt", 'w', encoding='utf-8') as f:
+            #f.write(str(func(c1))
 
+    #for number in range(1, 11):
+    #filename = 'a%d.txt' % number
+    #data = read_data(filename)
+
+    #for c1 in xrange(10):
+    """
+    for c1 in 10:
+        print("H E L L O")
+        y1 = np.loadtxt("file_" + str(c1) + ".txt", 'r') #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+        row1 = y1[120]
+            
+        print(row1)
+        pp.plot(row1)
+        pp.show()
+    """
     #     max_G = max(max_G, tf.reduce_max(fluid_model_g.G).numpy())
     #     min_G = min(min_G, tf.reduce_min(fluid_model_g.G).numpy())
     #     max_X = max(max_X, tf.reduce_max(fluid_model_g.X).numpy())
@@ -191,6 +188,7 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
     #     min_Y = min(min_Y, tf.reduce_min(fluid_model_g.Y).numpy())
 
     # print(min_G, max_G, min_X, max_X, min_Y, max_Y)
+    #print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
 
 def charged_nucleation_in_2D(writer, args, R=30, D=25, weights=(0, -10, -8, 8)):
     dx = 2*R / args.height
@@ -395,8 +393,24 @@ if __name__ == '__main__':
 #=======================BJD make video from .png files 24.11.2020===========================
 def save1():
     #os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4")
-    os.system("ffmpeg -r 1 -i /home/brendan/software/tf2-model-g/plots/1D_video16/1D_video_XYG_%01d.png -vcodec mpeg4 -y 1D_2_seeds_video_16.mp4")
+    os.system("ffmpeg -r 1 -i /home/brendan/software/tf2-model-g/plots/1D_video7/1D_video_XYG_%01d.png -vcodec mpeg4 -y 1D_video_7.mp4")
 
 save1()
+"""
+    img_array = []
+    #for filename in glob.glob('C:/New folder/Images/*.jpg'):
+    for filename in glob.glob('/home/brendan/software/tf2-model-g/plots/test2_video1/*.png'):
+        #fig.savefig('/home/brendan/software/tf2-model-g/plots/test2_video1/test2_video_XYG_' + str(c1) + '.png')
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        size = (width,height)
+        img_array.append(img)
 
+
+    out = cv2.VideoWriter('test2_video1_project.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+ 
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+    out.release()
+"""
 #============================================================================================
