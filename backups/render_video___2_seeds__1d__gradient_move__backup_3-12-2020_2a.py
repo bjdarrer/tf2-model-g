@@ -47,26 +47,36 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
 
     def source_G(t):
         center = np.exp(-0.5*(t-5)**2) * 10
-        gradient = (1+np.tanh(t-30)) * 0.003 # BJD added 0.0003 ---> 0.003   1.12.2020
-        return -(
-            np.exp(-0.5*((x-25)**2 + y*y)) + np.exp(-0.5*((x+25)**2 + y*y))
-        ) * center + (x+8) * gradient  # BJD 2.2.2020 --- try gradient for half of plot!!
-    """
-    def source_G(t):
-        center = np.exp(-0.5*(t-5)**2) * 10
         gradient = (1+np.tanh(t-30)) * 0.0003
-        return -(
-            np.exp(-0.5*((x-25)**2 + y*y)) + np.exp(-0.5*((x+25)**2 + y*y))
-        ) * center + (x+8) * gradient
-    """
-    """
-    def source_G(t):
-        amount = np.exp(-0.5*(t-5)**2)
-        return (
-            np.exp(-0.5*((x-D)**2+y*y)) * weights[0] +
-            np.exp(-0.5*((x+D)**2+y*y)) * weights[1]
-        ) * amount
-    """    
+
+        #print("x = ", x)
+
+        #return -np.exp(-0.5*(x*x+y*y))* center + (x+8) * gradient
+        """
+        for item in array:
+            if item >= 3:
+                print("yes")
+        else:
+            print("no")
+        """
+
+        #"""
+        #return (
+        #for item in x:
+        #    if item < 0:
+        #if np.all(a == 0):
+        #if np.all(x < 0):   # might work!
+        # if x.all() < 0:
+        if np.where(x < 0):
+            return -(
+                np.exp(-0.5*((x-8)**2 + y*y)) + np.exp(-0.5*((x+8)**2 + y*y))
+            ) * center #+ (x+8) * gradient   # BJD 2.2.2020 --- try gradient for half of plot!!
+        else:
+            return -(
+                np.exp(-0.5*((x-8)**2 + y*y)) + np.exp(-0.5*((x+8)**2 + y*y))
+            ) * center + (x+8) * gradient   # BJD 2.2.2020 --- try gradient for half of plot!!
+        #"""
+
     source_functions = {
         'G': source_G,
     }
