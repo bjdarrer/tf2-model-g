@@ -43,9 +43,15 @@ sudo add-apt-repository ppa:mc3man/trusty-media
 sudo apt-get update
 sudo apt-get install ffmpeg
 ```
-See ---> [How to install ffmpeg for ubuntu using command line?](https://stackoverflow.com/questions/42589892/how-to-install-ffmpeg-for-ubuntu-using-command-line)
+See --- [How to install ffmpeg for ubuntu using command line?](https://stackoverflow.com/questions/42589892/how-to-install-ffmpeg-for-ubuntu-using-command-line)
 
 
 Programming text/debug editor:
 
 - [Visual Studio Code](https://code.visualstudio.com/)
+
+Install scipy:
+```bash
+sudo apt-get install python-pip  
+sudo pip install numpy scipy
+```
