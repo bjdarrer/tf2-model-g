@@ -6,6 +6,14 @@ import tensorflow as tf
 import progressbar
 import imageio
 import yaml
+import matplotlib.pyplot as pp  # BJD added 18.11.2020
+#import cv2 # BJD added 24.11.2020 - for make video
+#import glob # BJD added 24.11.2020 - for make video
+#import matplotlib.pyplot as plt
+#import ffmpeg
+import os # BJD added 24.11.2020 - for make video
+
+import io # BJD added 18.11.2020
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -14,6 +22,9 @@ except ImportError:
 from model_g import ModelG
 from fluid_model_g import FluidModelG
 from util import bl_noise
+from numpy import * # BJD added 20.11.2020
+from matplotlib import pyplot as plt # BJD added 20.11.2020
+from scipy import signal # BJD added 23.12.2020
 
 
 RESOLUTIONS = {
@@ -39,15 +50,101 @@ def make_video_frame(rgb, indexing='ij'):
 
 
 #def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=16):
-def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
+def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=60): # was R=30 BJD 4.1.2021
+    #c1 = 0 # BJD added this on 20.11.2020
     dx = 2*R / args.height
     x = (np.arange(args.width) - args.width // 2) * dx
     y = (np.arange(args.height) - args.height // 2) * dx
     x, y = np.meshgrid(x, y, indexing='ij')
+    
+    #def trapezoid_signal(x, width=2., slope=1., amp=1., offs=0):
+    def trapezoid_signal(x, width=2., slope=1., amp=10., offs=1):
+        #a = 10 * slope*width*signal.sawtooth(2 * np.pi * 1/10* x/width, width=0.5)/4.
+        #a = slope * width * signal.sawtooth(2 * np.pi * 1/10 * x/width, width=0.5)/4.
+        #a = slope * width * signal.sawtooth(2 * np.pi * 1/10 * x/width, width=0.5)/4.
+        a = slope * width * signal.sawtooth(2 * np.pi * 1/10 * x/width - 0.8, width=0.5)/4.
+        a[a>amp/2.] = amp/2.
+        a[a<-amp/2.] = -amp/2.
+        return a + amp/2. + offs
+
+    def f(x):
+        #return -3*x/10 #+ 20
+        neg = x < 0
+        neg2 = np.logical_and(x >= 0, x < 4.7) #c[a & b] x >= 0 and x < 20  c[a & b]  np.logical_and(x > -2, x < 2)
+        neg3 = x >= 4.7
+        return neg * (-x/5 + 1) + neg2 * (10 * signal.square(2 * np.pi /10 * x)) + neg3 * 1
+    
+    def f2(x):
+        #return -3*x/10 #+ 20
+        neg4 = x < 0
+        #neg2 = np.logical_and(x >= 0, x < 4.7) #c[a & b] x >= 0 and x < 20  c[a & b]  np.logical_and(x > -2, x < 2)
+        #neg3 = x >= 4.7
+        neg5 = x >= 0
+        #return neg * (-x/5 + 1) + neg2 * (50 * signal.square(2 * np.pi /10 * x)) + neg3 * 1
+        return neg4 * (-x/5 + 1) + neg5 * 1
+
+    def f3(x):
+        #return -3*x/10 #+ 20
+        #neg = x < 0
+        #neg6 = np.logical_and(y >= -10, y <= 10)
+        #neg7 = np.logical_and(y < -10, y > 10)
+        neg6 = np.logical_and(y >= -10, y <= 10)
+        neg7 = np.logical_or(y < -10, y > 10)
+        #neg2 = np.logical_and(x >= 0, x < 4.7) #c[a & b] x >= 0 and x < 20  c[a & b]  np.logical_and(x > -2, x < 2)
+        #neg3 = x >= 4.7
+        #neg3 = x >= 0
+        #return neg * (-x/5 + 1) + neg2 * (50 * signal.square(2 * np.pi /10 * x)) + neg3 * 1
+        return neg6 * f2(x) + neg7 * f(x)   
+    #...........................................
 
     def source_G(t):
+        #center = np.exp(-0.5*(t-5)**2) * 10
         center = np.exp(-0.5*(t-5)**2) * 10
         gradient = (1+np.tanh(t-30)) * 0.0003
+        #potential = 0.015 * (np.tanh(t-25) + 1)
+        #x = np.linspace(-40, 40, 500)
+        #triangle = 10 * signal.sawtooth(40 * np.pi * 1/1400 * x + 0, 0.5) + 10
+        #triangle = 10 * signal.sawtooth(2 * np.pi * 1/70 * x + 0.001, 0.5) + 10  # BJD: last used here 28.12.2020
+        #trapezoid = trapezoid_signal(x, width=40, slope=5, amp=50)
+        piecewise = f(x)
+        #piecewise_choice = f3(x)
+        #piecewise_1 = list(map(f, x))
+        #trapezoid = trapezoid_signal(x, width=40, slope=10, amp=50)
+        #composite = composite_triangle(x)
+        #gradient = ( (t/3) - 8 ) * 0.0003 # (1+np.tanh(t-30)) * 0.0003
+        #print("x = ", x)
+        #return -np.exp(-0.5*(x*x+y*y))* center + (x+8) * gradient
+        #u = x/25
+        #u = x/10
+        return -(
+        #    #np.exp(-0.5*((x-8)**2 + y*y)) + np.exp(-0.5*((x+8)**2 + y*y)) # 2 particles 16 units apart
+            np.exp(-0.5*((x+50)**2 + y*y)) #+ np.exp(-0.5*((x)**2 + y*y))
+        ) * center + piecewise * gradient   # piecewise function test 5.2.2021
+        #return -(
+            #np.exp( -0.5*( (x+25)**2 + y*y ) ) 
+        #    x * y * ( x**2 - y**2 ) / ( x**2 + y**2 )
+        #) * center #+ (u*u + 1) * gradient #+ (x+8) * potential
+            
+            #np.exp(-0.5*((x-D)**2+y*y)) * nucleator +
+            #(u*u - 1) * potential
+            #np.exp(-0.5*((x-15)**2+y*y)) * center  + (u*u - 1) * gradient #+ (x+8) * gradient 
+            #np.exp(-0.5*((x-15)**2 + y*y)) + np.exp(-0.5*((x+15)**2 + y*y)) * center  - (u*u + 5) * gradient
+            #np.exp(-0.5*((x-12)**2 + y*y)) + np.exp(-0.5*((x+12)**2 + y*y)) 
+        #) * center + triangle * gradient # BJD - note minus sign maybe in wrong w.r.t. (u*u - 1) --- 22.12.2020
+            #np.exp(-0.5*((x-15)**2 + (y-25)**2)) + np.exp(-0.5*((x-15)**2 + (y+25)**2)) + 
+            #np.exp(-0.5*((x+55)**2 + (y)**2))
+        #) * center + trapezoid * gradient # 3 particles for de Broglie diffraction --- 5.2.2021
+#......................................................
+
+    source_functions = {
+        'G': source_G,
+    }
+
+    """
+    def source_X(t):
+        #center = np.exp(-0.5*(t-5)**2) * 10
+        center = np.exp(-(1/18)*(t-10)**2)
+        #gradient = (1+np.tanh(t-30)) * 0.0003
         #gradient = ( (t/3) - 8 ) * 0.0003 # (1+np.tanh(t-30)) * 0.0003
 
         #print("x = ", x)
@@ -56,19 +153,20 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
 
         return -(
             #np.exp(-0.5*((x-8)**2 + y*y)) + np.exp(-0.5*((x+8)**2 + y*y)) # 2 particles 16 units apart
-            np.exp(-0.5*((x)**2 + y*y)) + np.exp(-0.5*((x)**2 + y*y))
-        ) * center + (x+8) * gradient   # BJD 2.2.2020 --- try gradient for half of plot!!
+            np.exp(-0.5*((x)**2 + y*y)) #+ np.exp(-0.5*((x)**2 + y*y))
+        ) * center #+ (x+8) * gradient   # BJD 2.2.2020 --- try gradient for half of plot!!
 
     source_functions = {
-        'G': source_G,
+        'X': source_X,
     }
-
+    """
     flow = [0*x, 0*x]
 
     fluid_model_g = FluidModelG(
         x*0,
         x*0,
         x*0,
+        #x*0   # BJD 28.1.2021 --- added
         flow,
         dx,
         dt=args.dt,
@@ -95,6 +193,182 @@ def nucleation_and_motion_in_G_gradient_fluid_2D(writer, args, R=30):
             zero_line = 1 - tf.exp(-600 * fluid_model_g.Y**2)
             frame = make_video_frame([c * zero_line for c in rgb])
             writer.append_data(frame)
+
+#-------------------------BJD 28.1.2021----rough code at present-----------------------------------------
+            """
+            if n == 200:
+                print("n = ", n)
+                break
+            #c1 = c1 + 1
+            print("H E L L O")
+            #y1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/quiver_array14/u.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            #y2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/quiver_array14/v.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+
+            c1 = c1 + 1
+            # Set up grid and test data
+            #nx, ny = 256, 1024
+            nx, ny = 240, 426
+            #(426,240)
+            x1 = range(nx)
+            y1 = range(ny)
+
+            #data = numpy.random.random((nx, ny))
+            U = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/quiver_array25/u.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            V = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/quiver_array25/v.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            # BJD 28.1.2021: u and v are saved as arrays in fluid_model_g.py as fllows:
+            # np.savetxt("/home/brendan/software/tf2-model-g/arrays/quiver_array18/u.txt", self.u)
+            # np.savetxt("/home/brendan/software/tf2-model-g/arrays/quiver_array18/v.txt", self.v)
+
+            #data = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array12/Y.txt")
+
+            #hf = plt.figure(figsize=(10,10))
+            #ha = hf.add_subplot(111, projection='3d')
+            #ha = hf.add_subplot(111, projection='2d')
+
+            X1, Y1 = np.meshgrid(x1, y1)  # `plot_surface` expects `x` and `y` data to be 2D
+            #ha.plot_surface(X, Y, data)
+            #ha.plot_surface(X, Y, data, rstride=1, cstride=1, cmap=cm.coolwarm,
+            #                       linewidth=0, antialiased=False)
+            #ha.plot_surface(X.T, Y.T, data)
+
+            #surf = ha.plot_surface(X1, Y1, data, rstride=1, cstride=1, cmap=cm.coolwarm,
+            #           linewidth=0, antialiased=False)
+            #ha.set_zlim(-1, 3)
+            #hf.colorbar(surf, shrink=0.5, aspect=10)
+            #hf = plt.figure(figsize=(10,10))
+            """
+            """
+            fig, hf = plt.subplots(figsize=(10,10))
+            #ax3.set_title("pivot='tip'; scales with x view")
+            hf.set_title("pivot='tip'; scales with x view" + str(c1))
+            M = np.hypot(U, V)
+            Q = hf.quiver(X1, Y1, U, V, M, units='x', pivot='tip', width=0.022,
+               scale=1 / 0.15)
+            qk = hf.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
+                   coordinates='figure')
+            hf.scatter(X1, Y1, color='0.5', s=1)
+            """
+            """
+            fig, hf = plt.subplots(figsize=(10,10))
+            hf.set_title("Model G fluid velocity vector field - every 5th arrow, time = " + str(c1))
+            #Q = hf.quiver(X1[::10, ::10], Y1[::10, ::10], U[::10, ::10], V[::10, ::10],
+               #pivot='mid', units='inches')
+            #M = np.hypot(U, V)
+            Q = hf.quiver(X1[::5, ::5], Y1[::5, ::5], U[::5, ::5], V[::5, ::5], units='width',
+                pivot='mid', scale=0.1, headwidth=7)#pivot='mid', units='inches')#, scale=1)#, scale=5)
+            #qk = hf.quiverkey(Q, 0.9, 0.9, 1, r'$\frac{distance}{time}$', labelpos='E',
+                   #coordinates='figure')
+            qk = hf.quiverkey(Q, 0.9, 0.9, 0.1, r'$\frac{distance}{time}$', labelpos='E',
+                   coordinates='figure')#, color='b')
+            hf.scatter(X1[::5, ::5], Y1[::5, ::5], color='r', s=5)
+
+
+            #plt.show()
+
+            #plt.title('Y potential in 2D space - time = ' + str(c1))
+            #plt.xlabel("x spacial units")
+            #plt.ylabel("y spacial units")
+            #plt.zlabel("X, Y, G pot. - concentration per unit vol")
+            #fig.savefig('test2.png')   # save the figure to file
+            #plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
+            #plt.show()
+
+            plt.savefig('/home/brendan/software/tf2-model-g/plots/2D_video31/2D_video_velocity_' + str(c1) + '.png')
+            #plt.close(hf)    # close the figure window
+
+            #y3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array10/G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            #column1 = y1[120]  # choose column 120 of 2D array = (426,240)
+            #column2 = y2[120]  # choose column 120 of 2D array = (426,240)
+            #column3 = y3[120]  # choose column 120 of 2D array = (426,240)
+            #row1 = y1[214]  # choose row 214 of 2D array = (426,240)
+            #row2 = y2[214]  # choose row 214 of 2D array = (426,240)
+            #row3 = y3[214]  # choose row 214 of 2D array = (426,240)
+
+            #x, y = np.meshgrid(x, y, indexing='ij')
+            #X, Y = np.meshgrid(np.arange(0, 2 * np.pi, .2), np.arange(0, 2 * np.pi, .2))
+            #U = np.gradient(fluid_model_g.G,1)
+            #V = np.gradient(fluid_model_g.G,2)
+            #U = np.cos(X)
+            #V = np.sin(Y)
+            #np.savetxt("/home/brendan/software/tf2-model-g/arrays/quiver_array13/X.txt", np.gradient(fluid_model_g.G,1))
+            # sphinx_gallery_thumbnail_number = 3
+            """
+            """
+            X, Y = np.meshgrid(np.arange(0, 2 * np.pi, .2), np.arange(0, 2 * np.pi, .2))
+            U = np.cos(X)
+            V = np.sin(Y)
+
+            # sphinx_gallery_thumbnail_number = 3
+            fig3, ax3 = plt.subplots()
+            ax3.set_title("pivot='tip'; scales with x view")
+            M = np.hypot(U, V)
+            Q = ax3.quiver(X, Y, U, V, M, units='x', pivot='tip', width=0.022,
+               scale=1 / 0.15)
+            qk = ax3.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
+                   coordinates='figure')
+            ax3.scatter(X, Y, color='0.5', s=1)
+
+            plt.show()
+            #..........................
+            
+            if n == 150:
+                print("n = ", n)
+                break
+        #if n == 4:
+        #    X_array = [
+        #        0.7*(fluid_model_g.X - min_X) / (max_X - min_X),
+        #    ] # BJD put this in 18.11.2020
+        #    print("Array of X: ", X_array) # ***** BJD inserted this line 18.11.2020 *****
+            c1 = c1 + 1
+            print("H E L L O")
+            y1 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array10/X.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y2 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array10/Y.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            y3 = np.loadtxt("/home/brendan/software/tf2-model-g/arrays/array10/G.txt") #, delimiter=" :-) ", usecols=(120))  # (426, 240)
+            #column1 = y1[120]  # choose column 120 of 2D array = (426,240)
+            #column2 = y2[120]  # choose column 120 of 2D array = (426,240)
+            #column3 = y3[120]  # choose column 120 of 2D array = (426,240)
+            row1 = y1[214]  # choose row 214 of 2D array = (426,240)
+            row2 = y2[214]  # choose row 214 of 2D array = (426,240)
+            row3 = y3[214]  # choose row 214 of 2D array = (426,240)
+
+            #t = linspace(0, 2*math.pi, 400)
+            #a = sin(t)
+            #b = cos(t)
+            #c = a + b
+
+            print(row1)
+            fig, pp = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+            #fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+            #ax.plot([0,1,2], [10,20,3])
+
+            #pp.plot(t, a, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
+            #pp.plot(t, b, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
+            #pp.plot(t, c, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
+            # https://stackoverflow.com/questions/22276066/how-to-plot-multiple-functions-on-the-same-figure-in-matplotlib
+            
+            pp.plot(row1, 'r') # plotting t, a separately - BJD new plotting code 21.11.2020
+            pp.plot(row2, 'b') # plotting t, b separately - BJD new plotting code 21.11.2020
+            pp.plot(row3, 'g') # plotting t, c separately - BJD new plotting code 21.11.2020
+
+            #pp.plot(row1) # BJD previous working plot code 21.11.2020
+            #pp.show()
+            pp.set_ylim(-3.5, 3) #BJD added 11.12.2020 see https://stackoverflow.com/questions/41009258/how-to-plot-2-animated-graphics-with-x-axis-fixed-in-matplotlib-with-subplots
+            #plt.savefig('test2.png')
+            #plt.savefig('test2.pdf')
+            plt.title('X, Y, G potential vs 1D space - time = ' + str(c1))
+            plt.xlabel("1D spacial units")
+            plt.ylabel("X, Y, G pot. - concentration per unit vol")
+            #fig.savefig('test2.png')   # save the figure to file
+            plt.legend(["X", "Y", "G"]) # BJD legend added 21.11.2020
+
+            fig.savefig('/home/brendan/software/tf2-model-g/plots/1D_video17/1D_video_XYG_' + str(c1) + '.png')
+            plt.close(fig)    # close the figure window
+            #plt.savefig('test2_' + str(c1) + '.png')
+            #..........................
+            """
+#----------------------------------------------------------------------            
+            
+
     #     max_G = max(max_G, tf.reduce_max(fluid_model_g.G).numpy())
     #     min_G = min(min_G, tf.reduce_min(fluid_model_g.G).numpy())
     #     max_X = max(max_X, tf.reduce_max(fluid_model_g.X).numpy())
@@ -170,11 +444,18 @@ def soliton_in_g_well_2D(writer, args, R=25, D=15):
 
     def source_G(t):
         nucleator = -np.exp(-0.5*(t-5)**2)
-        potential = 0.015 * (np.tanh(t-25) + 1)
-        u = x / R
+        #potential = 0.015 * (np.tanh(t-25) + 1)
+        #potential = 0.0003 * (np.tanh(t-25) + 1)   # gradient = (1+np.tanh(t-30)) * 0.0003 # see above
+        
+        #u = x / R
+        #u = x/10 - 5  # see: "soliton_in_g_well_2D___1_seed__gradient_1__2a.mp4"
+        #u = x/15 # see: "soliton_in_g_well_2D___1_seed__gradient_2__2b.mp4"
+        #u = x/25
         return (
-            np.exp(-0.5*((x-D)**2+y*y)) * nucleator +
-            (u*u - 1) * potential
+            #np.exp(-0.5*((x-D)**2+y*y)) * nucleator +
+            #(u*u - 1) * potential
+            np.exp( -0.5*((x)**2 + y*y) ) * nucleator #+ (x+8) * potential
+            #(u*u - 1) * potential #+ (x+8) * gradient      
         )
 
     source_functions = {
@@ -211,7 +492,7 @@ def soliton_in_g_well_2D(writer, args, R=25, D=15):
 
 # TODO: Requires some work. Unstable like this.
 def nucleation_3D(writer, args, R=20):
-    raise NotImplementedError("Needs some work")
+#    raise NotImplementedError("Needs some work")
     params = {
         "A": 3.4,
         "B": 13.5,
@@ -298,6 +579,7 @@ if __name__ == '__main__':
         'nucleation_and_motion_in_fluid_2D': nucleation_and_motion_in_G_gradient_fluid_2D,
         'charged_nucleation_in_2D': charged_nucleation_in_2D,
         'soliton_in_g_well_2D': soliton_in_g_well_2D,
+        'nucleation_3D': nucleation_3D,
     }
 
     parser = argparse.ArgumentParser(description='Render audio samples')
@@ -349,3 +631,11 @@ if __name__ == '__main__':
 
     episodes[args.episode](writer, args)
     writer.close()
+#=======================BJD make video from .png files 24.11.2020===========================
+#def save1():
+    #os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4")
+    #os.system("ffmpeg -r 1 -i /home/brendan/software/tf2-model-g/plots/2D_video31/2D_video_velocity_%01d.png -vcodec mpeg4 -y nucleation_and_motion_in_fluid_2D___velocity_vector___2d____video_92.mp4")
+
+#save1()
+
+#============================================================================================
